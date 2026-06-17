@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EasyBank — Online Banking</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="easybank_style.css">
+</head>
+<body>
+
+<!-- ── GLOBAL NAV ──────────────────────────────────────────── -->
+<nav class="navbar" id="main-navbar" style="display:none"></nav>
+
+<!-- ── TOAST ──────────────────────────────────────────────── -->
+<div class="toast" id="toast"></div>
+
+<!-- ── SESSION TIMEOUT MODAL ──────────────────────────────── -->
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal-box">
+    <div class="modal-icon">⏱️</div>
+    <div class="modal-title">Session About to Expire</div>
+    <div class="modal-body">
+      Your session has been inactive for 10 minutes. For your security, you'll be logged out automatically unless you choose to stay.
+    </div>
+    <div class="flex gap-12 justify-center">
+      <button class="btn btn-ghost" id="modal-stay-btn">Stay Logged In</button>
+      <button class="btn btn-primary" id="modal-login-btn">Log Out</button>
+    </div>
+    <div class="modal-note">10-min inactivity timeout per FFIEC 2016 standard</div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     SLIDE 1 — LOGIN
+     ══════════════════════════════════════════════════════════ -->
+<div class="screen active" id="screen-login">
+  <div style="display:flex;align-items:center;justify-content:center;flex:1;padding:32px 16px;background:var(--offwhite)">
+    <div class="login-card card">
+      <div class="login-header">
+        <h1>EasyBank</h1>
+        <p>Secure Online Banking</p>
+      </div>
+      <div class="login-body" id="login-body">
+        <h2>Sign In to Your Account</h2>
+        <!-- Error banner injected here by JS -->
+        <div class="field-group">
+          <label class="field-label" for="login-username">Username / Email</label>
+          <input class="field-input" id="login-username" type="text" placeholder="Enter your username..." autocomplete="username">
+        </div>
+        <div class="field-group">
+          <label class="field-label" for="login-password">Password</label>
+          <input class="field-input" id="login-password" type="password" placeholder="••••••••" autocomplete="current-password">
+        </div>
+        <div class="login-extras">
+          <label class="remember-me"><input type="checkbox"> Remember me</label>
+          <span class="forgot-link">Forgot password?</span>
+        </div>
+        <button class="btn btn-primary btn-lg" id="login-submit">Sign In →</button>
+      </div>
+      <div class="login-footer">
+        <div class="ssl-badge">🔒 Protected by 256-bit SSL encryption  |  PCI DSS Compliant</div>
+      </div>
+    </div>
+    <div class="proto-note">
+      <strong>Prototype Note</strong>
+      Enter any username + any password (e.g. "demo") to sign in. Type "wrong" as password to test the error state.
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     SLIDE 2 — DASHBOARD
+     ══════════════════════════════════════════════════════════ -->
+<div class="screen" id="screen-dashboard">
+  <div class="page-content">
+
+    <!-- Welcome banner -->
+    <div class="welcome-banner">
+      <div>
+        <div class="welcome-name">Good morning, Hakan.</div>
+        <div class="welcome-login">Last login: Jun 17, 2026 at 8:42 AM</div>
+      </div>
+      <div class="balance-display">
+        <div class="balance-label">Checking #4892</div>
+        <div class="balance-amount">$12,450.00</div>
+      </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="section-title mb-12">Quick Actions</div>
+    <div class="quick-actions-grid" id="qa-grid"></div>
+
+    <!-- Recent Transactions -->
+    <div class="section-header">
+      <div class="section-title">Recent Transactions</div>
+      <span class="section-link" id="dash-view-all">View all →</span>
+    </div>
+    <div class="card">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Description</th>
+            <th>Amount</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="dash-tx-body"></tbody>
+      </table>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     SLIDE 3 — TRANSFER STEP 1: SELECT TYPE
+     ══════════════════════════════════════════════════════════ -->
+<div class="screen" id="screen-transfer-type">
+  <div class="page-content">
+    <div class="step-bar">
+      <div class="step active">1. Select Type</div>
+      <div class="step">2. Enter Details</div>
+      <div class="step">3. Confirm</div>
+      <div class="step">4. Done</div>
+    </div>
+
+    <div class="text-center mb-24">
+      <div class="page-title">Fund Transfer</div>
+      <div class="page-sub mt-8">What type of transfer would you like to make?</div>
+    </div>
+
+    <div class="transfer-type-grid">
+      <div class="transfer-type-card" data-type="own">
+        <div class="transfer-type-icon">🔄</div>
+        <div class="transfer-type-title">Between My Accounts</div>
+        <div class="transfer-type-desc">Move money between your own checking and savings accounts.</div>
+        <button class="btn btn-primary btn-full">Select →</button>
+      </div>
+      <div class="transfer-type-card" data-type="user">
+        <div class="transfer-type-icon">👤</div>
+        <div class="transfer-type-title">To Another EasyBank User</div>
+        <div class="transfer-type-desc">Send to any registered EasyBank customer.</div>
+        <button class="btn btn-primary btn-full">Select →</button>
+      </div>
+      <div class="transfer-type-card" data-type="wire">
+        <div class="transfer-type-icon">🏦</div>
+        <div class="transfer-type-title">Wire Transfer</div>
+        <div class="transfer-type-desc">Transfer to an external bank account.</div>
+        <button class="btn btn-primary btn-full">Select →</button>
+      </div>
+    </div>
+
+    <div class="text-center mt-24">
+      <button class="btn btn-ghost" id="btn-back-dashboard">← Back to Dashboard</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     SLIDE 4 — TRANSFER STEP 2: ENTER DETAILS
+     ══════════════════════════════════════════════════════════ -->
+<div class="screen" id="screen-transfer-details">
+  <div class="page-content">
+    <div class="step-bar">
+      <div class="step done">1. Select Type</div>
+      <div class="step active">2. Enter Details</div>
+      <div class="step">3. Confirm</div>
+      <div class="step">4. Done</div>
+    </div>
+
+    <div class="page-title text-center mb-24">Enter Transfer Details</div>
+
+    <div class="transfer-form-grid">
+      <!-- Form column -->
+      <div class="flex-col gap-16">
+        <div class="card" style="padding:20px">
+          <div class="flex-col gap-16">
+
+            <div class="field-group">
+              <label class="field-label">From Account</label>
+              <input class="field-input" type="text" value="Checking #4892  –  Balance: $12,450.00" readonly>
+            </div>
+
+            <div class="field-group">
+              <label class="field-label" for="tx-to">To Account / Recipient</label>
+              <input class="field-input" id="tx-to" type="text" placeholder="Enter account number or select payee...">
+            </div>
+
+            <div class="grid-2">
+              <div class="field-group">
+                <label class="field-label" for="tx-amount">Amount ($)</label>
+                <input class="field-input" id="tx-amount" type="number" min="1" max="5000" placeholder="0.00">
+              </div>
+              <div class="field-group">
+                <label class="field-label" for="tx-date">Transfer Date</label>
+                <input class="field-input" id="tx-date" type="date">
+              </div>
+            </div>
+
+            <div class="field-group">
+              <label class="field-label" for="tx-memo">Memo (Optional)</label>
+              <input class="field-input" id="tx-memo" type="text" placeholder="Add a note...">
+            </div>
+
+            <div class="alert alert-warning" style="padding:10px 14px">
+              <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:13px;color:var(--amber)">
+                <input type="checkbox" id="tx-recurring" style="accent-color:var(--teal);width:15px;height:15px">
+                Set as recurring transfer &nbsp;&nbsp; Frequency: Weekly
+              </label>
+            </div>
+
+            <!-- Limit warning (hidden by default) -->
+            <div class="alert alert-error hidden" id="tx-limit-banner"></div>
+            <!-- Validation error -->
+            <div class="alert alert-error hidden" id="tx-error-banner"></div>
+
+          </div>
+        </div>
+
+        <div class="flex gap-12">
+          <button class="btn btn-primary" style="flex:1" id="btn-continue-confirm">Continue to Confirmation →</button>
+          <button class="btn btn-ghost" id="btn-cancel-transfer">Cancel</button>
+        </div>
+      </div>
+
+      <!-- Summary column -->
+      <div>
+        <div class="summary-card">
+          <h3>Transfer Summary</h3>
+          <div class="summary-row"><span class="summary-label">From:</span><span class="summary-val" id="sum-from">Checking #4892</span></div>
+          <div class="summary-row"><span class="summary-label">To:</span><span class="summary-val" id="sum-to">—</span></div>
+          <div class="summary-row"><span class="summary-label">Amount:</span><span class="summary-val" id="sum-amount">$0.00</span></div>
+          <div class="summary-row"><span class="summary-label">Date:</span><span class="summary-val" id="sum-date">—</span></div>
+          <div class="summary-row"><span class="summary-label">Memo:</span><span class="summary-val" id="sum-memo">—</span></div>
+          <div class="alert alert-warning mt-12" style="font-size:12px;padding:8px 12px">
+            ⚠️ Daily transfer limit: <strong>$5,000</strong>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     SLIDE 5 — TRANSFER STEP 3: CONFIRM
+     ══════════════════════════════════════════════════════════ -->
+<div class="screen" id="screen-transfer-confirm">
+  <div class="page-content">
+    <div class="step-bar">
+      <div class="step done">1. Select Type</div>
+      <div class="step done">2. Enter Details</div>
+      <div class="step active">3. Confirm</div>
+      <div class="step">4. Done</div>
+    </div>
+
+    <div class="page-title text-center mb-8">Confirm Your Transfer</div>
+    <div class="text-center text-muted text-sm mb-24">Please review the details before submitting.</div>
+
+    <div class="card" style="padding:24px;max-width:680px;margin:0 auto">
+      <div class="confirmation-grid" id="confirm-details-grid"></div>
+      <div class="divider"></div>
+      <div class="flex gap-12 justify-center">
+        <button class="btn btn-ghost" id="btn-edit-details">← Edit Details</button>
+        <button class="btn btn-green" id="btn-confirm-transfer">Confirm Transfer</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     SLIDE 6 — TRANSFER STEP 4: SUCCESS
+     ══════════════════════════════════════════════════════════ -->
+<div class="screen" id="screen-transfer-success">
+  <div class="page-content">
+    <div class="step-bar">
+      <div class="step done">1. Select Type</div>
+      <div class="step done">2. Enter Details</div>
+      <div class="step done">3. Confirm</div>
+      <div class="step active">4. Done</div>
+    </div>
+
+    <div class="success-screen">
+      <div class="success-icon">✓</div>
+      <div class="success-title" style="color:var(--green)">Transfer Successful!</div>
+      <div class="success-ref-card">
+        <div class="success-amount" id="success-tx-amount"></div>
+        <div class="success-ref" id="success-tx-ref"></div>
+      </div>
+      <div class="success-actions">
+        <button class="btn btn-ghost" id="btn-back-dash-success">Back to Dashboard</button>
+        <button class="btn btn-teal" id="btn-another-transfer">Make Another Transfer</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     SLIDE 7 — BILL PAY
+     ══════════════════════════════════════════════════════════ -->
+<div class="screen" id="screen-bill-pay">
+  <div class="page-content">
+    <div class="flex items-center gap-12 mb-20">
+      <span class="section-tag">SRS §3.3</span>
+      <div class="page-title">Bill Payments</div>
+      <button class="btn btn-teal btn-sm" style="margin-left:auto" onclick="alert('Add Payee form — coming in full release.')">+ Add Payee</button>
+    </div>
+
+    <div class="section-title mb-12">Registered Payees</div>
+    <div class="card payee-table-wrap">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Payee</th>
+            <th>Account</th>
+            <th>Due Date</th>
+            <th>Amount</th>
+            <th>Status</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="payee-tbody"></tbody>
+      </table>
+    </div>
+
+    <div class="bill-schedule-form">
+      <h3>Schedule a Payment</h3>
+      <div class="bill-schedule-grid">
+        <div class="field-group">
+          <label class="field-label">Payee</label>
+          <select class="field-input" id="sched-payee"></select>
+        </div>
+        <div class="field-group">
+          <label class="field-label">Amount ($)</label>
+          <input class="field-input" id="sched-amount" type="number" placeholder="0.00">
+        </div>
+        <div class="field-group">
+          <label class="field-label">Payment Date</label>
+          <input class="field-input" id="sched-date" type="date">
+        </div>
+        <div>
+          <button class="btn btn-teal btn-full" id="btn-schedule-bill" style="height:42px;margin-top:20px">Schedule</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     SLIDE 8 — BILL PAY SUCCESS
+     ══════════════════════════════════════════════════════════ -->
+<div class="screen" id="screen-bill-success">
+  <div class="page-content">
+    <div class="success-screen">
+      <div class="success-icon">✓</div>
+      <div class="success-title" style="color:var(--green)">Payment Scheduled!</div>
+      <div class="success-ref-card">
+        <div class="success-amount" id="bill-success-amount"></div>
+        <div class="success-ref" id="bill-success-ref"></div>
+        <div class="success-ref mt-8" id="bill-success-from"></div>
+      </div>
+      <div class="success-actions">
+        <button class="btn btn-ghost" id="btn-back-dash-bill">Back to Dashboard</button>
+        <button class="btn btn-teal" id="btn-schedule-another">Schedule Another</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     SLIDE 9 — ACCOUNT MANAGEMENT
+     ══════════════════════════════════════════════════════════ -->
+<div class="screen" id="screen-accounts">
+  <div class="page-content">
+    <div class="flex items-center gap-12 mb-20">
+      <span class="section-tag">SRS §3.1</span>
+      <div class="page-title">Account Management</div>
+    </div>
+
+    <div class="account-cards" id="account-cards-grid"></div>
+
+    <div class="section-title mb-12">Search Transactions</div>
+    <div class="search-bar">
+      <input class="field-input" id="tx-search" type="text" placeholder="Search by description, amount, or date...">
+      <button class="btn btn-teal" id="btn-search-tx">Search</button>
+    </div>
+
+    <div class="card">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Description</th>
+            <th>Type</th>
+            <th>Category</th>
+            <th>Amount</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="acct-tx-body"></tbody>
+      </table>
+    </div>
+
+    <div class="download-bar mt-16">
+      <span class="download-bar-label">Download Statement:</span>
+      <button class="btn btn-outline-teal btn-sm dl-btn" data-range="Last 30 Days">Last 30 Days</button>
+      <button class="btn btn-outline-teal btn-sm dl-btn" data-range="Last 3 Months">Last 3 Months</button>
+      <button class="btn btn-outline-teal btn-sm dl-btn" data-range="Custom Range">Custom Range</button>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     SLIDE 10 — CUSTOMER SUPPORT
+     ══════════════════════════════════════════════════════════ -->
+<div class="screen" id="screen-support">
+  <div class="page-content">
+    <div class="flex items-center gap-12 mb-20">
+      <span class="section-tag">SRS §3.4</span>
+      <div class="page-title">Customer Support</div>
+    </div>
+
+    <div class="support-grid">
+
+      <!-- Chat panel -->
+      <div class="card chat-panel">
+        <div class="chat-header">
+          <span class="chat-title">Live Chat</span>
+          <span class="online-dot">Online</span>
+        </div>
+        <div class="chat-messages" id="chat-messages"></div>
+        <div class="chat-input-row">
+          <input class="field-input" id="chat-input" type="text" placeholder="Type a message...">
+          <button class="btn btn-teal btn-sm" id="btn-chat-send">Send</button>
+        </div>
+      </div>
+
+      <!-- Email panel -->
+      <div class="card email-panel">
+        <h3>Send Email Query</h3>
+        <div class="field-group">
+          <label class="field-label" for="email-subject">Subject</label>
+          <input class="field-input" id="email-subject" type="text" placeholder="Describe your issue...">
+        </div>
+        <div class="field-group">
+          <label class="field-label" for="email-message">Message</label>
+          <textarea class="field-input" id="email-message" placeholder="Describe your question or issue in detail..."></textarea>
+        </div>
+        <button class="btn btn-primary btn-full" id="btn-send-email">Send Email</button>
+      </div>
+
+    </div>
+
+    <div class="phone-bar">
+      📞 Phone Support: <strong>1-800-EASYBNK</strong> &nbsp;(Mon–Fri 8 AM–8 PM EST) &nbsp;|&nbsp; Average wait: 3 min
+    </div>
+
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     SLIDE 11 — EDGE CASES
+     ══════════════════════════════════════════════════════════ -->
+<div class="screen" id="screen-edge-cases">
+  <div class="page-content">
+    <div class="flex items-center gap-12 mb-8">
+      <span class="section-tag">Edge Cases — SRS §4.3 / Test Scenario 5</span>
+    </div>
+    <div class="page-title mb-20">Edge Case Screens</div>
+
+    <div class="edge-grid">
+
+      <!-- Daily limit exceeded -->
+      <div class="edge-card limit">
+        <div class="edge-title">Daily Limit Exceeded</div>
+        <div class="alert alert-error">
+          <span class="alert-icon">⚠️</span>
+          Transfer amount ($6,000) exceeds your daily limit of $5,000. Please enter a lower amount or contact support to request a limit increase.
+        </div>
+        <div class="field-group">
+          <label class="field-label">Amount</label>
+          <input class="field-input" type="number" placeholder="Enter up to $5,000..." max="5000">
+        </div>
+        <button class="btn btn-primary" id="edge-try-again">Try Again</button>
+        <div class="edge-note">Or call 1-800-EASYBNK to request a higher limit</div>
+        <div class="edge-ref-note">Transfer step 2 →</div>
+      </div>
+
+      <!-- Session expired -->
+      <div class="edge-card timeout">
+        <div class="edge-title">Session Expired</div>
+        <div class="alert alert-warning">
+          <span class="alert-icon">⏱️</span>
+          Your session timed out after 10 minutes of inactivity. For your security, please log in again to continue.
+        </div>
+        <div class="text-center text-sm text-muted" style="padding:8px 0">Your unsaved transfer details have been cleared.</div>
+        <button class="btn btn-primary" id="edge-login-again" style="background:var(--amber);border-color:var(--amber)">Log In Again</button>
+        <div class="edge-note">10-min inactivity timeout (FFIEC 2016 standard)</div>
+        <div class="edge-ref-note">Triggers during Scenario 5 →</div>
+      </div>
+
+      <!-- Insufficient funds -->
+      <div class="edge-card funds">
+        <div class="edge-title">Insufficient Funds</div>
+        <div class="alert alert-error">
+          <span class="alert-icon">⚠️</span>
+          Your Checking account balance ($12,450) is insufficient for this transfer. Please enter a lower amount or select a different account.
+        </div>
+        <div class="field-group">
+          <label class="field-label">Available Balance</label>
+          <input class="field-input" type="text" value="$12,450.00  (Checking)" readonly>
+        </div>
+        <div class="field-group">
+          <label class="field-label">Requested Amount</label>
+          <input class="field-input" type="text" value="$15,000.00  ← Exceeds balance" readonly style="color:var(--red);font-weight:600">
+        </div>
+        <button class="btn btn-primary" id="edge-edit-amount">Edit Amount</button>
+        <div class="edge-ref-note">Transfer step 2 →</div>
+      </div>
+
+    </div>
+
+    <div class="edge-footer-nav">
+      <span class="section-link" id="edge-ret-dashboard">← Return to Dashboard</span>
+      <span class="section-link" id="edge-ret-transfer">← Return to Transfer Entry</span>
+      <span class="section-link" id="edge-ret-login">← Return to Login</span>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     SLIDE 12 — LOGIN ERROR (accessible via wrong password)
+     Handled inline by the login screen JS logic
+     ══════════════════════════════════════════════════════════ -->
+
+<script src="easybank_app.js"></script>
+</body>
+</html>
