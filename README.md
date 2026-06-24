@@ -14,7 +14,7 @@ This project demonstrates a polished banking experience with a login flow, dashb
 
 ## Features
 
-- Login prototype with error handling and session state
+- Login prototype with error handling and session state 
 - Dashboard with quick actions and recent transactions
 - Multi-step transfer flow: select type, enter details, confirm, and success screen
 - Bill pay scheduler with sample payees and success confirmation
