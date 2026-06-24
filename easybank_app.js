@@ -1,6 +1,7 @@
 /* ════════════════════════════════════════════════════════════
    EasyBank Interactive Prototype — app.js
    Mirrors all 12 slides from EasyBank_Interactive_Prototype.pptx
+   Hakan Atilgan - Western Governors University
    ════════════════════════════════════════════════════════════ */
 
 'use strict';
